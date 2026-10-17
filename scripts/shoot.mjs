@@ -44,25 +44,28 @@ const browser = await chromium.launch({
   env: process.env,
 });
 
-const context = await browser.newContext({
-  viewport: { width, height },
-  colorScheme: scheme,
-  deviceScaleFactor: 1,
-  locale: 'zh-CN',
-});
+try {
+  const context = await browser.newContext({
+    viewport: { width, height },
+    colorScheme: scheme,
+    deviceScaleFactor: 1,
+    locale: 'zh-CN',
+  });
 
-const page = await context.newPage();
-const errors = [];
-page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
-page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
+  const page = await context.newPage();
+  const errors = [];
+  page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+  page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
 
-await page.goto(base + url, { waitUntil: 'networkidle' });
-await page.waitForTimeout(250);
+  await page.goto(base + url, { waitUntil: 'networkidle' });
+  await page.waitForTimeout(250);
 
-const theme = await page.evaluate(() => document.documentElement.getAttribute('data-theme'));
-await page.screenshot({ path: out, fullPage });
+  const theme = await page.evaluate(() => document.documentElement.getAttribute('data-theme'));
+  await page.screenshot({ path: out, fullPage });
 
-console.log(`${out}  ${width}x${height}  theme=${theme}  errors=${errors.length}`);
-if (errors.length) console.log('  ' + errors.slice(0, 3).join(' | '));
-
-await browser.close();
+  console.log(`${out}  ${width}x${height}  theme=${theme}  errors=${errors.length}`);
+  if (errors.length) console.log('  ' + errors.slice(0, 3).join(' | '));
+} finally {
+  // 无论成功失败都关掉，避免像 ERR_CONNECTION_REFUSED 那样留下孤儿浏览器进程
+  await browser.close();
+}
