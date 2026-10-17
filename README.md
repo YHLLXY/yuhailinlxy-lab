@@ -17,6 +17,16 @@ npm run preview  # 预览构建产物
 
 Windows 下如果 `npm` 被执行策略拦住，用 `npm.cmd`。
 
+## 截图自查
+
+```bash
+npm run preview -- --port 4321        # 另开一个终端
+node scripts/shoot.mjs --url / --out screenshots/home.png --width 1440 --height 900 --scheme dark --full
+```
+
+用系统 Edge 渲染，不下载浏览器。**必须从真实终端跑**：如果 `process.env` 是空的，
+`os.tmpdir()` 会返回字面量 `undefined\temp`，Edge 会弹「无法创建数据目录」。
+
 ## 目录
 
 ```
