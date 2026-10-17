@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import PageHeader from '../components/PageHeader.astro';
 import EasingCard from '../components/EasingCard.astro';
+import ComparePanel from '../components/ComparePanel.astro';
 import { EASINGS_BY_CATEGORY, EASINGS } from '../data/easings';
 ---
 <Base
@@ -27,6 +28,8 @@ import { EASINGS_BY_CATEGORY, EASINGS } from '../data/easings';
       </p>
     </div>
   </div>
+
+  <ComparePanel />
 
   {EASINGS_BY_CATEGORY.map((group) => (
     <section class="lab-container mt-12 md:mt-16" aria-labelledby={`group-${group.category}`}>
@@ -118,5 +121,161 @@ import { EASINGS_BY_CATEGORY, EASINGS } from '../data/easings';
       const ok = await copyText(easing);
       flash(btn, ok ? '已复制' : '复制失败');
     });
+  }
+</script>
+
+<script>
+  // ─────────────────────────────────────────────────────────────
+  // 对照台：选两条曲线，让它们在同一帧起跑。
+  //
+  // 为什么用 CSS transition 而不是 WAAPI：两条 transition 只要在
+  // 同一个任务里被写入，浏览器就只在同一次样式重算中提交，
+  // 起点必然落在同一帧；不必手动同步 startTime。
+  // 另外，全局的 [data-motion="reduce"] 规则会把 transition-duration
+  // 压到 0.001ms，减少动效时自动变成「瞬间到位」，无需额外分支。
+  // ─────────────────────────────────────────────────────────────
+
+  const panel = document.querySelector<HTMLElement>('[data-compare]');
+
+  if (panel) {
+    const chart = panel.querySelector<SVGSVGElement>('[data-compare-chart]');
+    const controls = panel.querySelector<HTMLElement>('[data-compare-controls]');
+    const hint = panel.querySelector<HTMLElement>('[data-compare-hint]');
+    const cards = Array.from(document.querySelectorAll<HTMLElement>('[data-easing-card]'));
+    const picked: HTMLElement[] = [];
+
+    const slotOf = (k: 'a' | 'b') => panel.querySelector<HTMLElement>(`[data-slot="${k}"]`);
+    const dotOf = (k: 'a' | 'b') => panel.querySelector<HTMLElement>(`[data-dot="${k}"]`);
+
+    const bezierOf = (card: HTMLElement): number[] => {
+      const m = (card.dataset.easing ?? '').match(/cubic-bezier\(([^)]+)\)/);
+      return m ? m[1].split(',').map((v) => Number(v.trim())) : [0, 0, 1, 1];
+    };
+
+    function renderChart(list: number[][]) {
+      if (!chart) return;
+      if (list.length === 0) {
+        chart.innerHTML = '';
+        return;
+      }
+      let minY = 0;
+      let maxY = 100;
+      const paths: string[] = [];
+
+      list.forEach((bz, i) => {
+        const [x1, y1, x2, y2] = bz;
+        const cx1 = x1 * 100;
+        const cy1 = (1 - y1) * 100;
+        const cx2 = x2 * 100;
+        const cy2 = (1 - y2) * 100;
+        minY = Math.min(minY, cy1, cy2);
+        maxY = Math.max(maxY, cy1, cy2);
+        paths.push(
+          `<path d="M 0 100 C ${cx1} ${cy1}, ${cx2} ${cy2}, 100 0" fill="none" stroke="var(--lab-curve-${i === 0 ? 'a' : 'b'})" stroke-width="2" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`,
+        );
+      });
+
+      const pad = 8;
+      chart.setAttribute('viewBox', `${-pad} ${minY - pad} ${100 + pad * 2} ${maxY - minY + pad * 2}`);
+      chart.innerHTML =
+        `<line x1="0" y1="100" x2="100" y2="0" stroke="currentColor" stroke-opacity="0.18" stroke-width="1" stroke-dasharray="3 3" vector-effect="non-scaling-stroke"/>` +
+        paths.join('');
+    }
+
+    function render() {
+      cards.forEach((card) => {
+        const idx = picked.indexOf(card);
+        const state = idx === 0 ? 'a' : idx === 1 ? 'b' : '';
+        card.dataset.pickState = state;
+        const btn = card.querySelector<HTMLButtonElement>('[data-pick]');
+        if (btn) {
+          btn.setAttribute('aria-pressed', String(Boolean(state)));
+          btn.textContent = state ? `已选 ${state.toUpperCase()}` : '对照';
+        }
+      });
+
+      (['a', 'b'] as const).forEach((k, i) => {
+        const slot = slotOf(k);
+        if (!slot) return;
+        const card = picked[i];
+        const name = slot.querySelector<HTMLElement>('[data-slot-name]');
+        const code = slot.querySelector<HTMLElement>('[data-slot-bezier]');
+        if (name) name.textContent = card ? (card.querySelector('h3')?.textContent ?? '') : '未选';
+        if (code) code.textContent = card ? (card.dataset.easing ?? '') : '';
+      });
+
+      renderChart(picked.map(bezierOf));
+
+      const box = panel!.querySelector<HTMLElement>('[data-chart-box]');
+      if (box) box.dataset.empty = String(picked.length === 0);
+
+      if (controls) controls.hidden = picked.length < 2;
+      if (hint) {
+        hint.textContent =
+          picked.length === 0
+            ? '在下方任意卡片上点「对照」，选满两条即可开跑。'
+            : picked.length === 1
+              ? '再选一条就能开跑。'
+              : '同帧播放：两条同时起跑、同时结束，差别只在过程。';
+      }
+    }
+
+    function play() {
+      if (picked.length < 2) return;
+      const duration = Number(panel!.dataset.duration ?? 320);
+      const dots = [dotOf('a'), dotOf('b')].filter((d): d is HTMLElement => Boolean(d));
+      if (dots.length < 2) return;
+      const eases = picked.map((c) => c.dataset.easing ?? 'linear');
+
+      // 先归零，并强制回流，否则过渡会从上一次的终点开始
+      dots.forEach((d) => {
+        d.style.transition = 'none';
+        d.style.transform = 'translateX(0px)';
+      });
+      void panel!.offsetWidth;
+
+      // 同一个任务内写入两条过渡 —— 保证同一帧起跑
+      dots.forEach((d, i) => {
+        const track = d.closest<HTMLElement>('[data-track]');
+        const dist = Math.max(0, (track?.clientWidth ?? 0) - 16 - d.offsetWidth);
+        d.style.transition = `transform ${duration}ms ${eases[i]}`;
+        d.style.transform = `translateX(${dist}px)`;
+      });
+    }
+
+    cards.forEach((card) => {
+      card.querySelector<HTMLButtonElement>('[data-pick]')?.addEventListener('click', () => {
+        const before = picked.length;
+        const i = picked.indexOf(card);
+        if (i >= 0) picked.splice(i, 1);
+        else {
+          if (picked.length >= 2) picked.shift();
+          picked.push(card);
+        }
+        render();
+        if (picked.length === 2 && before < 2) {
+          const reduce = document.documentElement.getAttribute('data-motion') === 'reduce';
+          panel.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+        }
+      });
+    });
+
+    panel.querySelector('[data-compare-play]')?.addEventListener('click', play);
+
+    panel.querySelector('[data-compare-clear]')?.addEventListener('click', () => {
+      picked.length = 0;
+      render();
+    });
+
+    panel.querySelectorAll<HTMLButtonElement>('.compare-dur').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        panel.querySelectorAll<HTMLButtonElement>('.compare-dur').forEach((b) => {
+          b.setAttribute('aria-pressed', String(b === btn));
+        });
+        panel.dataset.duration = btn.dataset.dur ?? '320';
+      });
+    });
+
+    render();
   }
 </script>

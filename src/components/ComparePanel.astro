@@ -1,0 +1,126 @@
+---
+// 对照台：选两条曲线，让它们在同一帧起跑。
+// 状态完全由 src/pages/easing.astro 的脚本驱动，这里只出骨架。
+---
+<section class="lab-container mt-12 scroll-mt-24 md:mt-16" aria-labelledby="compare-title" data-compare>
+  <div class="rounded-card border border-border bg-surface p-4 sm:p-6">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <h2 id="compare-title" class="text-base font-semibold text-foreground">对照台</h2>
+        <p class="mt-1 max-w-lg text-xs leading-relaxed text-muted-foreground">
+          「手感」是比出来的，不是看出来的。选两条曲线，让它们在<strong class="text-foreground">同一帧</strong>起跑。
+        </p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2" data-compare-controls hidden>
+        <div
+          role="group"
+          aria-label="对照时长"
+          class="flex overflow-hidden rounded-full border border-border-strong text-xs"
+        >
+          <button type="button" class="compare-dur" data-dur="160">160</button>
+          <button type="button" class="compare-dur" data-dur="320" aria-pressed="true">320</button>
+          <button type="button" class="compare-dur" data-dur="480">480</button>
+        </div>
+        <span class="tnum text-xs text-muted-foreground">ms</span>
+        <button type="button" class="compare-btn compare-btn--primary" data-compare-play>同帧播放</button>
+        <button type="button" class="compare-btn" data-compare-clear>清空</button>
+      </div>
+    </div>
+
+    <div class="mt-5 grid items-center gap-5 md:grid-cols-[minmax(0,17rem)_minmax(0,1fr)]">
+      <div class="relative mx-auto w-full max-w-[17rem] text-foreground" data-chart-box data-empty="true">
+        <svg
+          viewBox="0 0 100 100"
+          class="aspect-square w-full"
+          preserveAspectRatio="xMidYMid meet"
+          role="img"
+          aria-label="两条选中曲线的叠加对照图"
+          data-compare-chart> </svg>
+        <span class="chart-empty">选两条曲线</span>
+      </div>
+
+      <div class="grid gap-3">
+      {['a', 'b'].map((slot, i) => (
+        <div class="rounded-md border border-border p-3" data-slot={slot}>
+          <div class="flex items-baseline justify-between gap-2">
+            <span class="flex min-w-0 items-center gap-2">
+              <span class={`size-2 shrink-0 rounded-full ${i === 0 ? 'bg-curve-a' : 'bg-curve-b'}`}></span>
+              <span class="truncate text-xs font-medium text-foreground" data-slot-name>未选</span>
+            </span>
+            <code class="tnum shrink-0 text-[11px] text-muted-foreground" data-slot-bezier></code>
+          </div>
+          <div class="relative mt-2 h-7 rounded bg-surface-sunken" data-track={slot}>
+            <span class="absolute inset-x-2 top-1/2 h-px -translate-y-1/2 bg-border-strong" aria-hidden="true"></span>
+            <span
+              class={`absolute top-[calc(50%-5px)] left-2 size-2.5 rounded-full ${i === 0 ? 'bg-curve-a' : 'bg-curve-b'}`}
+              data-dot={slot}></span>
+          </div>
+        </div>
+      ))}
+      </div>
+    </div>
+
+    <p class="mt-4 text-xs text-muted-foreground" data-compare-hint>
+      在下方任意卡片上点「对照」，选满两条即可开跑。
+    </p>
+  </div>
+</section>
+
+<style>
+  .compare-btn {
+    border-radius: 9999px;
+    border: 1px solid var(--lab-border-strong);
+    padding: 0.35rem 0.7rem;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--lab-foreground);
+    transition: background-color var(--lab-dur-fast) var(--lab-ease-out);
+  }
+
+  .compare-btn:hover {
+    background-color: var(--lab-muted);
+  }
+
+  .compare-btn--primary {
+    border-color: var(--lab-accent);
+    background-color: var(--lab-accent);
+    color: var(--lab-accent-foreground);
+  }
+
+  .compare-btn--primary:hover {
+    background-color: var(--lab-accent);
+    filter: brightness(1.06);
+  }
+
+  .chart-empty {
+    position: absolute;
+    inset: 0;
+    display: none;
+    place-items: center;
+    font-size: 12px;
+    color: var(--lab-muted-foreground);
+  }
+
+  [data-empty='true'] .chart-empty {
+    display: grid;
+  }
+
+  .compare-dur {
+    padding: 0.35rem 0.7rem;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--lab-muted-foreground);
+    transition: background-color var(--lab-dur-fast) var(--lab-ease-out),
+      color var(--lab-dur-fast) var(--lab-ease-out);
+  }
+
+  .compare-dur:hover {
+    color: var(--lab-foreground);
+  }
+
+  .compare-dur[aria-pressed='true'] {
+    background-color: var(--lab-accent);
+    color: var(--lab-accent-foreground);
+  }
+</style>

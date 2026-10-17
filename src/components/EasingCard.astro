@@ -50,6 +50,7 @@ const css = cssEasing(curve.bezier);
   <div class="mt-auto flex items-center gap-2 pt-5">
     <span class="tnum text-xs text-muted-foreground">{curve.duration}ms</span>
     <span class="flex-1"></span>
+    <button type="button" class="easing-btn" data-pick aria-pressed="false">对照</button>
     <button type="button" class="easing-btn" data-play>播放</button>
     <button type="button" class="easing-btn" data-copy>复制 CSS</button>
   </div>
@@ -80,5 +81,14 @@ const css = cssEasing(curve.bezier);
 
   .easing-dot {
     will-change: transform;
+  }
+
+  /* 被选进对照台时，用左侧色条标记它是 A 还是 B */
+  :global(article[data-pick-state='a']) {
+    box-shadow: inset 3px 0 0 var(--lab-curve-a);
+  }
+
+  :global(article[data-pick-state='b']) {
+    box-shadow: inset 3px 0 0 var(--lab-curve-b);
   }
 </style>

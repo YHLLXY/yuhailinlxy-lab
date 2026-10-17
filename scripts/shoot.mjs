@@ -24,6 +24,8 @@ const width = Number(arg('width', '1440'));
 const height = Number(arg('height', '900'));
 const scheme = arg('scheme', 'light');
 const fullPage = argv.includes('--full');
+// --pick 0,1 表示先点选第 0、1 张卡片的「对照」按钮，用于截取对照台
+const pick = (arg('pick', '') || '').split(',').filter(Boolean).map(Number);
 const base = arg('base', 'http://localhost:4321');
 
 const EDGE_CANDIDATES = [
@@ -58,7 +60,12 @@ try {
   page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
 
   await page.goto(base + url, { waitUntil: 'networkidle' });
-  await page.waitForTimeout(250);
+  for (const i of pick) {
+    await page.locator('[data-easing-card]').nth(i).locator('[data-pick]').click();
+    await page.waitForTimeout(200);
+  }
+  // 选择动作会触发平滑滚动，等它彻底停下再截图
+  await page.waitForTimeout(pick.length ? 900 : 250);
 
   const theme = await page.evaluate(() => document.documentElement.getAttribute('data-theme'));
   await page.screenshot({ path: out, fullPage });
