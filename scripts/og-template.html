@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <title>og</title>
+    <style>
+      :root {
+        --paper: #f6f4f1;
+        --panel: #ffffff;
+        --ink: #282728;
+        --muted: #666d7a;
+        --hair: #e4ddd4;
+        --grid: #ece5dd;
+        --axis: #d8d3ce;
+        --blue: #006cac;
+        --orange: #c2410c;
+      }
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      html, body { width: 1200px; height: 630px; }
+
+      body {
+        position: relative;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+          "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+        -webkit-font-smoothing: antialiased;
+        overflow: hidden;
+      }
+
+      .mono {
+        font-family: "Cascadia Code", Consolas, "SF Mono", Menlo, ui-monospace, monospace;
+      }
+
+      .frame {
+        position: absolute;
+        inset: 24px;
+        border: 1px solid var(--hair);
+        border-radius: 22px;
+      }
+
+      .top {
+        position: absolute;
+        left: 88px;
+        right: 88px;
+        top: 72px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .brand { display: flex; align-items: center; gap: 13px; }
+      .mark { width: 38px; height: 38px; display: block; border-radius: 9px; }
+      .brand-text { display: flex; flex-direction: column; gap: 4px; }
+      .brand-zh { font-size: 20px; font-weight: 600; letter-spacing: 0.01em; }
+      .brand-en { font-size: 9.5px; letter-spacing: 0.24em; color: var(--muted); }
+
+      .kicker {
+        font-size: 9.5px;
+        letter-spacing: 0.24em;
+        color: var(--muted);
+        padding-top: 2px;
+      }
+
+      h1 {
+        position: absolute;
+        left: 88px;
+        top: 150px;
+        width: 540px;
+        font-size: 62px;
+        line-height: 1.16;
+        font-weight: 600;
+        letter-spacing: 0.005em;
+        color: var(--ink);
+      }
+
+      .sub {
+        position: absolute;
+        left: 88px;
+        top: 322px;
+        width: 500px;
+        font-size: 16.5px;
+        line-height: 1.95;
+        color: var(--muted);
+      }
+
+      .sub b { font-weight: 600; color: var(--ink); font-feature-settings: "tnum"; }
+
+      .panel {
+        position: absolute;
+        left: 676px;
+        top: 132px;
+        width: 436px;
+        padding: 24px;
+        background: var(--panel);
+        border: 1px solid #e9e2da;
+        border-radius: 16px;
+        box-shadow: 0 18px 44px rgba(40, 39, 40, 0.06), 0 2px 6px rgba(40, 39, 40, 0.035);
+      }
+
+      .panel-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 9.5px;
+        letter-spacing: 0.16em;
+        color: var(--muted);
+      }
+
+      .panel-head .left { display: inline-flex; align-items: center; gap: 8px; }
+      .panel-head .pip { width: 5px; height: 5px; border-radius: 50%; background: var(--blue); }
+
+      .chart { display: block; width: 388px; height: 236px; margin-top: 16px; overflow: visible; }
+
+      .legend { margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+
+      .legend-row { display: flex; align-items: center; font-size: 10.5px; line-height: 1.4; }
+      .swatch { width: 16px; height: 2px; border-radius: 2px; margin-right: 9px; flex: none; }
+      .legend-name { width: 66px; color: var(--ink); }
+      .legend-val { color: var(--muted); letter-spacing: 0.01em; }
+
+      .foot {
+        position: absolute;
+        left: 88px;
+        right: 88px;
+        top: 512px;
+        border-top: 1px solid var(--hair);
+        padding-top: 19px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .url { display: inline-flex; align-items: center; gap: 9px; font-size: 13px; letter-spacing: 0.02em; color: var(--ink); }
+      .url .pip { width: 6px; height: 6px; border-radius: 50%; background: var(--blue); }
+      .tags { font-size: 11.5px; letter-spacing: 0.05em; color: var(--muted); }
+    </style>
+  </head>
+  <body>
+    <div class="frame"></div>
+
+    <header class="top">
+      <div class="brand">
+        <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">
+          <rect width="32" height="32" rx="7" fill="#212737" />
+          <path d="M6 25c6 0 7-18 20-18" fill="none" stroke="#58a6ff" stroke-width="2.4" stroke-linecap="round" />
+          <path d="M6 7c13 0 14 18 20 18" fill="none" stroke="#fb923c" stroke-width="2.4" stroke-linecap="round" />
+        </svg>
+        <div class="brand-text">
+          <span class="brand-zh">动效实验室</span>
+          <span class="brand-en mono">MOTION LAB</span>
+        </div>
+      </div>
+      <div class="kicker mono">A DECISION MANUAL</div>
+    </header>
+
+    <h1>动效不是装饰，<br />是一个决策。</h1>
+
+    <p class="sub">
+      <b>18</b> 条缓动曲线、<b>11</b> 个时长基准，<br />
+      以及一张「什么时候不该动」的清单。
+    </p>
+
+    <aside class="panel">
+      <div class="panel-head mono">
+        <span class="left"><span class="pip"></span>同帧对照</span>
+        <span>320 ms</span>
+      </div>
+      <svg class="chart" viewBox="0 0 388 236" fill="none" aria-hidden="true">
+        <path
+          d="M97 0V236M194 0V236M291 0V236M0 59H388M0 118H388M0 177H388"
+          stroke="var(--grid)"
+          stroke-width="1"
+        />
+        <path d="M0 235H388" stroke="var(--axis)" stroke-width="1" />
+        <path d="{{OUT_PATH}}" stroke="var(--blue)" stroke-width="2.8" stroke-linecap="round" />
+        <path d="{{IN_PATH}}" stroke="var(--orange)" stroke-width="2.8" stroke-linecap="round" />
+      </svg>
+      <div class="legend">
+        <div class="legend-row">
+          <span class="swatch" style="background: var(--blue)"></span>
+          <span class="legend-name mono">out-expo</span>
+          <span class="legend-val mono">{{OUT_BEZIER}}</span>
+        </div>
+        <div class="legend-row">
+          <span class="swatch" style="background: var(--orange)"></span>
+          <span class="legend-name mono">in-expo</span>
+          <span class="legend-val mono">{{IN_BEZIER}}</span>
+        </div>
+      </div>
+    </aside>
+
+    <footer class="foot">
+      <span class="url mono"><span class="pip"></span>lab.yuhailinlxy.com</span>
+      <span class="tags">用在哪　·　多久　·　什么时候不该用</span>
+    </footer>
+  </body>
+</html>

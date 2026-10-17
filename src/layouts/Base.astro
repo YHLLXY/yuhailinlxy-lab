@@ -16,6 +16,9 @@ const {
 const siteName = '动效实验室';
 const fullTitle = title === siteName ? siteName : `${title} · ${siteName}`;
 const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://lab.yuhailinlxy.com');
+const ogImage = new URL('/og.png', Astro.site ?? 'https://lab.yuhailinlxy.com');
+const ogImageAlt =
+  '浅色分享卡：左侧写着「动效不是装饰，是一个决策」，右侧是 out-expo 与 in-expo 两条缓动曲线的同帧对照，底部是 lab.yuhailinlxy.com。';
 ---
 <!doctype html>
 <html lang="zh-CN">
@@ -33,7 +36,15 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://lab.yuhaili
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical.href} />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:image" content={ogImage.href} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={ogImageAlt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={ogImage.href} />
+    <meta name="twitter:image:alt" content={ogImageAlt} />
 
     <!-- 首帧前定好主题与动效档位，避免闪烁 -->
     <script is:inline>
