@@ -41,13 +41,16 @@ git push -u origin master
 ## 4. 绑定域名（需要你做）
 
 项目 → Settings → Domains → 添加 `lab.yuhailinlxy.com`
-Vercel 会提示需要一条 CNAME，值通常是 `cname.vercel-dns.com`。
+Vercel 会显示一条 CNAME 记录，把**面板上的原值**照抄下来。
 
 ## 5. 加 DNS 记录（需要你做，阿里云域名控制台）
 
 | 类型 | 主机记录 | 记录值 | TTL |
 |---|---|---|---|
-| CNAME | `lab` | `cname.vercel-dns.com` | 10 分钟 |
+| CNAME | `lab` | `e2eaf15c489d673c.vercel-dns-017.com` | 10 分钟 |
+
+> 这个值以 Vercel 面板 **Settings → Domains** 显示的为准。Vercel 现在给每个项目分配独立 CNAME，
+> 旧的 `cname.vercel-dns.com` 官方说仍然可用，但没必要用旧的。
 
 > ⚠️ 这是**新增**一条记录。现有的 4 条 A 记录、MX、SPF、DMARC 一律不动。
 > 加完我会做全量 DNS 快照比对，确认没有误伤邮箱。
