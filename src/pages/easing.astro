@@ -1,24 +1,122 @@
 ---
 import Base from '../layouts/Base.astro';
 import PageHeader from '../components/PageHeader.astro';
-import UnderConstruction from '../components/UnderConstruction.astro';
+import EasingCard from '../components/EasingCard.astro';
+import { EASINGS_BY_CATEGORY, EASINGS } from '../data/easings';
 ---
 <Base
   title="缓动曲线"
-  description="18 条常用缓动曲线的性格对照：进场 7 条、退场 4 条、位移 7 条，每条标注适用场景与禁用场景。"
+  description="18 条常用缓动曲线的性格对照：进场 7 条、退场 4 条、位移 7 条，每条标注适用场景、禁用场景与建议时长。"
 >
   <PageHeader
-    eyebrow="Easing"
+    eyebrow="Easing · 18 条"
     title="18 条曲线，18 种性格"
     lead="曲线本身没人记得住，记得住的是「这个看起来急」。所以这里不讲数学，讲它给人的感觉、适合放在哪儿、以及放在哪儿会出问题。"
   />
-  <UnderConstruction
-    milestone="M2"
-    items={[
-      '进场 7 条 / 退场 4 条 / 位移 7 条，按用途分组，而不是按 cubic-bezier 数值排序',
-      '任意两条并排播放，跑在同一帧、同一时长上',
-      '每条曲线附：用在哪、什么时候别用、和它搭配的时长',
-      '键盘可直接操作，减少动效模式下切换为「直接呈现结果」',
-    ]}
-  />
+
+  <div class="lab-container">
+    <div class="rounded-card border border-border bg-surface p-4 text-xs leading-relaxed text-muted-foreground sm:p-5">
+      <p>
+        每张卡片里那条<strong class="text-foreground">虚线对角线</strong>是匀速参照系 ——
+        曲线偏离它多少，就是这条缓动的「性格」有多少。点「播放」看它真实跑一遍。
+      </p>
+      <p class="mt-2">
+        顺序按用途分三组（<span class="tnum">{EASINGS.length}</span> 条 =
+        进场 {EASINGS_BY_CATEGORY[0].items.length} · 退场 {EASINGS_BY_CATEGORY[1].items.length} · 位移 {EASINGS_BY_CATEGORY[2].items.length}），
+        不是按 cubic-bezier 数值排 —— 你要找的是「这种场合该用什么」，不是「0.16 在哪一页」。
+      </p>
+    </div>
+  </div>
+
+  {EASINGS_BY_CATEGORY.map((group) => (
+    <section class="lab-container mt-12 md:mt-16" aria-labelledby={`group-${group.category}`}>
+      <div class="mb-5 flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-border pb-3">
+        <h2 id={`group-${group.category}`} class="text-base font-semibold text-foreground">
+          {group.label}
+        </h2>
+        <span class="tnum text-xs text-muted-foreground">{group.items.length} 条</span>
+        <p class="w-full text-xs text-muted-foreground sm:w-auto sm:flex-1">{group.hint}</p>
+      </div>
+      <div class="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
+        {group.items.map((curve) => <EasingCard curve={curve} />)}
+      </div>
+    </section>
+  ))}
+
+  <p class="lab-container mt-14 text-xs text-muted-foreground">
+    数据与文案说明：曲线名称与 cubic-bezier 数值属数学事实；「用在哪 / 别用在哪 / 时长」为本站编辑判断，
+    可讨论、可推翻。未引入任何第三方动画库。
+  </p>
 </Base>
+
+<script>
+  const REDUCED = () => document.documentElement.getAttribute('data-motion') === 'reduce';
+
+  /** 复制文本：优先 Clipboard API，失败回退到临时 textarea */
+  async function copyText(text: string): Promise<boolean> {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        const ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok;
+      } catch {
+        return false;
+      }
+    }
+  }
+
+  function flash(btn: HTMLButtonElement, label: string) {
+    const original = btn.dataset.label ?? btn.textContent ?? '';
+    btn.dataset.label = original;
+    btn.textContent = label;
+    btn.dataset.done = 'true';
+    window.setTimeout(() => {
+      btn.textContent = original;
+      btn.dataset.done = 'false';
+    }, 1200);
+  }
+
+  for (const card of document.querySelectorAll<HTMLElement>('[data-easing-card]')) {
+    const track = card.querySelector<HTMLElement>('[data-track]');
+    const dot = card.querySelector<HTMLElement>('[data-dot]');
+    const easing = card.dataset.easing ?? 'ease';
+    const duration = Number(card.dataset.duration ?? 300);
+    let running: Animation | null = null;
+
+    card.querySelector<HTMLButtonElement>('[data-play]')?.addEventListener('click', () => {
+      if (!track || !dot) return;
+      // 圆点左内边距 8px、右侧同样留 8px
+      const distance = Math.max(0, track.clientWidth - 16 - dot.offsetWidth);
+
+      running?.cancel();
+
+      // 用户要求减少动效时，直接呈现终点状态，而不是什么都不发生
+      if (REDUCED()) {
+        dot.style.transform = `translateX(${distance}px)`;
+        return;
+      }
+
+      dot.style.transform = 'translateX(0)';
+      running = dot.animate(
+        [{ transform: 'translateX(0px)' }, { transform: `translateX(${distance}px)` }],
+        { duration, easing, fill: 'both' },
+      );
+    });
+
+    card.querySelector<HTMLButtonElement>('[data-copy]')?.addEventListener('click', async (event) => {
+      const btn = event.currentTarget as HTMLButtonElement;
+      const ok = await copyText(easing);
+      flash(btn, ok ? '已复制' : '复制失败');
+    });
+  }
+</script>

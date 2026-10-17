@@ -1,0 +1,54 @@
+---
+import { cssEasing } from '../data/easings';
+
+interface Props {
+  bezier: readonly [number, number, number, number];
+}
+
+const { bezier } = Astro.props;
+const [x1, y1, x2, y2] = bezier;
+
+// 控制点换算成 SVG 坐标：x 直接放大 100，y 需要翻转
+const cx1 = x1 * 100;
+const cy1 = (1 - y1) * 100;
+const cx2 = x2 * 100;
+const cy2 = (1 - y2) * 100;
+
+// 按实际占用的范围裁一块刚好装得下的画布，过冲的曲线也不会被切掉
+const xs = [0, cx1, cx2, 100];
+const ys = [100, cy1, cy2, 0];
+const minX = Math.min(...xs);
+const maxX = Math.max(...xs);
+const minY = Math.min(...ys);
+const maxY = Math.max(...ys);
+const pad = 7;
+const viewBox = `${minX - pad} ${minY - pad} ${maxX - minX + pad * 2} ${maxY - minY + pad * 2}`;
+
+const d = `M 0 100 C ${cx1} ${cy1}, ${cx2} ${cy2}, 100 0`;
+---
+<svg
+  viewBox={viewBox}
+  class="h-full w-full"
+  preserveAspectRatio="xMidYMid meet"
+  role="img"
+  aria-label={`缓动曲线 ${cssEasing(bezier)}`}
+>
+  <!-- 对角线 = 匀速参照系，曲线偏离它多少，就是它的「性格」 -->
+  <line
+    x1="0"
+    y1="100"
+    x2="100"
+    y2="0"
+    stroke="currentColor"
+    stroke-opacity="0.18"
+    stroke-width="1"
+    stroke-dasharray="3 3"
+    vector-effect="non-scaling-stroke"></line>
+  <path
+    d={d}
+    fill="none"
+    stroke="var(--lab-curve-a)"
+    stroke-width="2"
+    stroke-linecap="round"
+    vector-effect="non-scaling-stroke"></path>
+</svg>

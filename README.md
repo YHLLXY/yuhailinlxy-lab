@@ -38,6 +38,23 @@ src/
 public/         favicon、robots
 ```
 
+## 文档
+
+| 文件 | 内容 |
+|---|---|
+| `docs/research/2026-10-17-M1-缓动曲线实现级调研.md` | 曲线数据来源、许可边界（easings.net 是 GPL-3.0）、为什么不需要动画库 |
+| `docs/plans/2026-10-17-动效实验室-v0.1-实施计划.md` | 里程碑与执行记录 |
+
+**本项目文档只存这个仓库里**，工作区不再保留副本。
+
+## 自检
+
+```bash
+npm run build
+npm run preview -- --port 4321     # 另开一个终端
+node scripts/verify-easing.mjs     # /easing 页面 13 项回归检查
+```
+
 ## 铁律
 
 改这个仓库之前先读一遍，这几条不是建议：

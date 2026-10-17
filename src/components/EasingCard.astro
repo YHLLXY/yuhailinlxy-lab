@@ -1,0 +1,84 @@
+---
+import EasingThumb from './EasingThumb.astro';
+import { cssEasing, type EasingCurve } from '../data/easings';
+
+interface Props {
+  curve: EasingCurve;
+}
+
+const { curve } = Astro.props;
+const css = cssEasing(curve.bezier);
+---
+<article
+  class="lab-card flex flex-col p-4 sm:p-5"
+  id={curve.id}
+  data-easing-card
+  data-easing={css}
+  data-duration={curve.duration}
+>
+  <div class="flex items-start gap-4">
+    <!-- 方形缩略图：曲线的真实比例，不拉伸 -->
+    <div class="size-[86px] shrink-0 text-foreground">
+      <EasingThumb bezier={curve.bezier} />
+    </div>
+    <div class="min-w-0 flex-1 pt-0.5">
+      <h3 class="text-sm font-semibold leading-snug text-foreground">{curve.name}</h3>
+      <p class="mt-0.5 text-xs text-muted-foreground">{curve.alias}</p>
+      <code class="tnum mt-2 block break-all text-[11px] leading-relaxed text-muted-foreground">{css}</code>
+    </div>
+  </div>
+
+  <!-- 一维运动测试：速度差只有动起来才看得见 -->
+  <div class="relative mt-4 h-7 rounded-md bg-surface-sunken" data-track>
+    <span class="absolute inset-x-2 top-1/2 h-px -translate-y-1/2 bg-border-strong" aria-hidden="true"></span>
+    <span
+      class="easing-dot absolute top-[calc(50%-5px)] left-2 block size-2.5 rounded-full bg-curve-a"
+      data-dot></span>
+  </div>
+
+  <dl class="mt-4 space-y-2.5 text-[12.5px] leading-relaxed">
+    <div>
+      <dt class="font-medium text-foreground">用在哪</dt>
+      <dd class="text-muted-foreground">{curve.useWhen}</dd>
+    </div>
+    <div>
+      <dt class="font-medium text-foreground">别用在哪</dt>
+      <dd class="text-muted-foreground">{curve.avoidWhen}</dd>
+    </div>
+  </dl>
+
+  <div class="mt-auto flex items-center gap-2 pt-5">
+    <span class="tnum text-xs text-muted-foreground">{curve.duration}ms</span>
+    <span class="flex-1"></span>
+    <button type="button" class="easing-btn" data-play>播放</button>
+    <button type="button" class="easing-btn" data-copy>复制 CSS</button>
+  </div>
+</article>
+
+<style>
+  .easing-btn {
+    border-radius: 9999px;
+    border: 1px solid var(--lab-border-strong);
+    padding: 0.4rem 0.8rem;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--lab-foreground);
+    transition:
+      background-color var(--lab-dur-fast) var(--lab-ease-out),
+      border-color var(--lab-dur-fast) var(--lab-ease-out);
+  }
+
+  .easing-btn:hover {
+    background-color: var(--lab-muted);
+    border-color: var(--lab-border-strong);
+  }
+
+  .easing-btn[data-done='true'] {
+    border-color: var(--lab-accent);
+    color: var(--lab-accent);
+  }
+
+  .easing-dot {
+    will-change: transform;
+  }
+</style>
