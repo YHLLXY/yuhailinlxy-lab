@@ -46,10 +46,15 @@ try {
   check(errors.length === 0, '无 JS 报错', errors.slice(0, 2).join(' | '));
 
   console.log('\n[sitemap]');
-  const sm = await page.request.get(BASE + '/sitemap-index.xml');
-  check(sm.status() === 200, 'sitemap-index.xml 可访问', String(sm.status()));
-  const body = await sm.text();
-  check(body.includes('lab.yuhailinlxy.com'), 'sitemap 域名正确');
+  // 走 Playwright 自己的网络栈；某些网络环境下 *.vercel.app 会被解析到污染 IP，
+  // 这时只报「无法判定」，不让整轮检查崩掉。
+  try {
+    const sm = await page.request.get(BASE + '/sitemap-index.xml', { timeout: 15000 });
+    check(sm.status() === 200, 'sitemap-index.xml 可访问', String(sm.status()));
+    check((await sm.text()).includes('lab.yuhailinlxy.com'), 'sitemap 域名正确');
+  } catch (err) {
+    console.log('  ⚠ sitemap 检查跳过（本机网络解析异常）:', String(err).split('\n')[0].slice(0, 80));
+  }
 
   console.log('\n[布局]');
   for (const w of [375, 768, 1440]) {
