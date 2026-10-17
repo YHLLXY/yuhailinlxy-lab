@@ -1,0 +1,134 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const {
+  title,
+  description = '动效实验室 —— 一个关于动效为什么这么动、什么时候不该动的交互手册。',
+} = Astro.props;
+
+const siteName = '动效实验室';
+const fullTitle = title === siteName ? siteName : `${title} · ${siteName}`;
+const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://lab.yuhailinlxy.com');
+---
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical.href} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#fdfdfd" />
+    <meta name="color-scheme" content="light dark" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical.href} />
+    <meta name="twitter:card" content="summary" />
+
+    <!-- 首帧前定好主题与动效档位，避免闪烁 -->
+    <script is:inline>
+      (function () {
+        var d = document.documentElement;
+        var t;
+        try { t = localStorage.getItem('lab-theme'); } catch (e) {}
+        if (t !== 'light' && t !== 'dark') {
+          t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        d.setAttribute('data-theme', t);
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', t === 'dark' ? '#212737' : '#fdfdfd');
+
+        var m;
+        try { m = localStorage.getItem('lab-motion'); } catch (e) {}
+        if (m !== 'reduce' && m !== 'full') {
+          m = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'reduce' : 'full';
+        }
+        d.setAttribute('data-motion', m);
+      })();
+    </script>
+  </head>
+
+  <body class="flex min-h-dvh flex-col">
+    <a href="#main" class="skip-link">跳到主内容</a>
+    <Header />
+    <main id="main" class="flex-1">
+      <slot />
+    </main>
+    <Footer />
+
+    <script>
+      const KEY = 'lab-theme';
+      const THEME_COLOR = { light: '#fdfdfd', dark: '#212737' };
+      const root = document.documentElement;
+      const media = window.matchMedia('(prefers-color-scheme: dark)');
+
+      function readStored(): string | null {
+        try {
+          return localStorage.getItem(KEY);
+        } catch {
+          return null;
+        }
+      }
+
+      function apply(theme: string) {
+        root.setAttribute('data-theme', theme);
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', THEME_COLOR[theme as 'light' | 'dark'] ?? THEME_COLOR.light);
+        const btn = document.querySelector('[data-theme-toggle]');
+        if (btn) {
+          const nextIsDark = theme !== 'dark';
+          btn.setAttribute('aria-label', nextIsDark ? '切换到深色模式' : '切换到浅色模式');
+          btn.setAttribute('aria-pressed', String(theme === 'dark'));
+        }
+      }
+
+      apply(root.getAttribute('data-theme') ?? 'light');
+
+      document.querySelector('[data-theme-toggle]')?.addEventListener('click', () => {
+        const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        try {
+          localStorage.setItem(KEY, next);
+        } catch {
+          /* 隐私模式下写入失败，本轮仍然生效 */
+        }
+        apply(next);
+      });
+
+      // 用户没有手动选过时，跟随系统
+      media.addEventListener('change', (e) => {
+        const stored = readStored();
+        if (stored !== 'light' && stored !== 'dark') apply(e.matches ? 'dark' : 'light');
+      });
+    </script>
+
+    <style>
+      .skip-link {
+        position: absolute;
+        left: 1rem;
+        top: 1rem;
+        z-index: 100;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid var(--lab-border);
+        border-radius: 0.5rem;
+        background-color: var(--lab-surface);
+        font-size: 0.8125rem;
+        transform: translateY(-250%);
+        transition: transform var(--lab-dur-fast) var(--lab-ease-out);
+      }
+
+      .skip-link:focus-visible {
+        transform: translateY(0);
+      }
+    </style>
+  </body>
+</html>

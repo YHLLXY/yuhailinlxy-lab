@@ -1,0 +1,31 @@
+# build
+dist/
+.astro/
+
+# deps
+node_modules/
+
+# logs
+npm-debug.log*
+pnpm-debug.log*
+
+# os / editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# env
+.env
+.env.*
+!.env.example
+
+# vercel
+.vercel
+
+# 本地验证产物
+screenshots/
+install.log
+preview.log
+dev.log

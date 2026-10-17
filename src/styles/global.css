@@ -1,0 +1,285 @@
+@import "tailwindcss";
+
+/* 深色由 html[data-theme] 驱动，而不是 class */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* =========================================================
+   1. 设计令牌
+   与站群其余两个站点同一套暖中性底色，但把「双曲线对照」
+   配色单独抽成 curve-a / curve-b —— 冷蓝 + 暖橙，是本站唯一
+   允许出现高饱和的地方，因为它承担的是"编码信息"而非装饰。
+   ========================================================= */
+@theme inline {
+  --color-background: var(--lab-background);
+  --color-surface: var(--lab-surface);
+  --color-surface-sunken: var(--lab-surface-sunken);
+  --color-foreground: var(--lab-foreground);
+  --color-muted: var(--lab-muted);
+  --color-muted-foreground: var(--lab-muted-foreground);
+  --color-border: var(--lab-border);
+  --color-border-strong: var(--lab-border-strong);
+  --color-accent: var(--lab-accent);
+  --color-accent-foreground: var(--lab-accent-foreground);
+  --color-curve-a: var(--lab-curve-a);
+  --color-curve-b: var(--lab-curve-b);
+
+  --font-app: var(--lab-font-app);
+  --font-mono: var(--lab-font-mono);
+
+  --radius-card: 0.875rem;
+}
+
+:root {
+  --lab-font-app: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+  --lab-font-mono: ui-monospace, SFMono-Regular, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  /* 页面自身的动效时长：一律短。演示区自己管理时长语义，不走这几个值。 */
+  --lab-dur-fast: 120ms;
+  --lab-dur-base: 200ms;
+  --lab-dur-slow: 320ms;
+  --lab-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --lab-ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --lab-ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+
+  --lab-background: #fdfdfd;
+  --lab-surface: #ffffff;
+  --lab-surface-sunken: #f6f4f1;
+  --lab-foreground: #282728;
+  --lab-muted: #efece8;
+  --lab-muted-foreground: #666d7a;
+  --lab-border: #ece9e9;
+  --lab-border-strong: #d8d3ce;
+  --lab-accent: #006cac;
+  --lab-accent-foreground: #ffffff;
+  --lab-curve-a: #006cac;
+  --lab-curve-b: #c2410c;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --lab-background: #212737;
+  --lab-surface: #262e3d;
+  --lab-surface-sunken: #1a2030;
+  --lab-foreground: #eaedf3;
+  --lab-muted: #343f60;
+  --lab-muted-foreground: #afb9ca;
+  --lab-border: #334155;
+  --lab-border-strong: #44506a;
+  --lab-accent: #58a6ff;
+  /* 亮蓝做底色时白字只有 2.6:1 —— 改深底字，这是对作品集那版的修正 */
+  --lab-accent-foreground: #0b1220;
+  --lab-curve-a: #58a6ff;
+  --lab-curve-b: #fb923c;
+}
+
+/* =========================================================
+   2. 基础层
+   ========================================================= */
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scrollbar-gutter: stable;
+  }
+
+  body {
+    background-color: var(--lab-background);
+    color: var(--lab-foreground);
+    font-family: var(--lab-font-app);
+    font-synthesis-weight: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3 {
+    text-wrap: balance;
+  }
+
+  p, li {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background-color: var(--lab-accent);
+    color: var(--lab-accent-foreground);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--lab-accent);
+    outline-offset: 3px;
+    border-radius: 3px;
+  }
+
+  a, button {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* 数字与代码统一等宽，保证对照表里的小数位对齐 */
+  .tnum {
+    font-family: var(--lab-font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* =========================================================
+   3. 组件层
+   ========================================================= */
+@layer components {
+  .lab-container {
+    width: 100%;
+    margin-inline: auto;
+    max-width: 72rem;
+    padding-inline: 1.25rem;
+  }
+
+  @media (min-width: 768px) {
+    .lab-container {
+      padding-inline: 2rem;
+    }
+  }
+
+  .lab-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background-color: color-mix(in oklab, var(--lab-background) 86%, transparent);
+    border-bottom: 1px solid var(--lab-border);
+    -webkit-backdrop-filter: saturate(1.4) blur(10px);
+    backdrop-filter: saturate(1.4) blur(10px);
+  }
+
+  .lab-nav-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.375rem 0.625rem;
+    border-radius: 0.5rem;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    color: var(--lab-muted-foreground);
+    transition: color var(--lab-dur-fast) var(--lab-ease-out),
+      background-color var(--lab-dur-fast) var(--lab-ease-out);
+  }
+
+  .lab-nav-link:hover {
+    color: var(--lab-foreground);
+    background-color: var(--lab-muted);
+  }
+
+  .lab-nav-link[data-active="true"] {
+    color: var(--lab-foreground);
+  }
+
+  .lab-nav-link[data-active="true"]::before {
+    content: "";
+    position: absolute;
+    left: 0.625rem;
+    right: 0.625rem;
+    bottom: 0.0625rem;
+    height: 1.5px;
+    border-radius: 1px;
+    background-color: var(--lab-accent);
+  }
+
+  .lab-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.5rem;
+    color: var(--lab-muted-foreground);
+    transition: color var(--lab-dur-fast) var(--lab-ease-out),
+      background-color var(--lab-dur-fast) var(--lab-ease-out);
+  }
+
+  .lab-icon-btn:hover {
+    color: var(--lab-foreground);
+    background-color: var(--lab-muted);
+  }
+
+  .lab-eyebrow {
+    font-size: 0.6875rem;
+    line-height: 1;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--lab-muted-foreground);
+  }
+
+  .lab-display {
+    font-size: clamp(1.95rem, 1.35rem + 2.9vw, 3.25rem);
+    line-height: 1.18;
+    font-weight: 600;
+    color: var(--lab-foreground);
+  }
+
+  .lab-lead {
+    font-size: clamp(0.9375rem, 0.9rem + 0.25vw, 1.0625rem);
+    line-height: 1.8;
+    color: var(--lab-muted-foreground);
+  }
+
+  .lab-card {
+    display: block;
+    border: 1px solid var(--lab-border);
+    border-radius: var(--radius-card);
+    background-color: var(--lab-surface);
+    transition: border-color var(--lab-dur-base) var(--lab-ease-out),
+      background-color var(--lab-dur-base) var(--lab-ease-out);
+  }
+
+  .lab-card:hover {
+    border-color: var(--lab-border-strong);
+    background-color: var(--lab-surface-sunken);
+  }
+}
+
+/* =========================================================
+   4. 减少动效 —— 放在所有 @layer 之外
+   CSS 级联层对 !important 是反向的：未分层的重要性声明优先级最高，
+   所以只有写在层外才能真正压过组件里的 transition。
+   ========================================================= */
+[data-motion="reduce"] *,
+[data-motion="reduce"] *::before,
+[data-motion="reduce"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* JS 未执行时的兜底 */
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-motion]) *,
+  html:not([data-motion]) *::before,
+  html:not([data-motion]) *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* =========================================================
+   5. 主题图标切换
+   未分层 + 后置：优先级高于任何 @layer 里的 display 声明，
+   不依赖 Tailwind 变体的排序规则。
+   ========================================================= */
+.lab-icon-moon {
+  display: none;
+}
+
+[data-theme="dark"] .lab-icon-sun {
+  display: none;
+}
+
+[data-theme="dark"] .lab-icon-moon {
+  display: block;
+}

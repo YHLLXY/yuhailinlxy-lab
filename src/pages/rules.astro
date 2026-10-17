@@ -1,0 +1,24 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHeader from '../components/PageHeader.astro';
+import UnderConstruction from '../components/UnderConstruction.astro';
+---
+<Base
+  title="原则"
+  description="动效的五条铁律，以及一页「这里不该动」的清单 —— 判断什么时候不动，比什么时候动更难。"
+>
+  <PageHeader
+    eyebrow="Rules"
+    title="五条铁律，和一页「不该动」"
+    lead="做动效的能力人人都有，克制才稀缺。真正拉开差距的不是你会多少种曲线，而是你知道哪一次点击不该有动画。"
+  />
+  <UnderConstruction
+    milestone="M4"
+    items={[
+      '五条铁律，每条配一个违反它的具体反例',
+      '「这里不该动」清单：高频操作、系统级反馈、内容阅读路径……',
+      'prefers-reduced-motion 的正确处理方式：不是关掉，是换成瞬间到位',
+      '一页自检表，发布前逐条对一遍',
+    ]}
+  />
+</Base>

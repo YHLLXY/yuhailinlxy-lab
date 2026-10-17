@@ -1,0 +1,24 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHeader from '../components/PageHeader.astro';
+import UnderConstruction from '../components/UnderConstruction.astro';
+---
+<Base
+  title="时长节奏"
+  description="11 个常见场景该给多少毫秒：hover、开关、弹窗、抽屉、页面转场等，附五条节奏铁律。"
+>
+  <PageHeader
+    eyebrow="Timing"
+    title="多久才算对"
+    lead="时长不是审美问题，是物理问题 —— 元素越大、位移越远、人越需要反应时间，就得越久。这里按场景给具体数字。"
+  />
+  <UnderConstruction
+    milestone="M3"
+    items={[
+      '11 个场景逐一给出毫秒数与理由：hover、按钮、开关、折叠、弹窗、抽屉、页面转场……',
+      '滑动条实时改时长，同屏看 120 / 240 / 480ms 的差别',
+      '五条节奏铁律：大位移配长时长、入场慢退场快、同一容器内时长要成比例……',
+      '同一场景下「过快」和「过慢」的反例，让你看见出错的版本',
+    ]}
+  />
+</Base>

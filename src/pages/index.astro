@@ -1,0 +1,123 @@
+---
+import Base from '../layouts/Base.astro';
+
+const entries = [
+  {
+    href: '/easing',
+    count: '18',
+    unit: '条',
+    title: '缓动曲线',
+    desc: '进场 7 · 退场 4 · 位移 7。每条都写清用在哪、以及什么时候别用。',
+  },
+  {
+    href: '/timing',
+    count: '11',
+    unit: '个场景',
+    title: '时长节奏',
+    desc: '从 hover 的 120ms 到页面转场的 480ms。按场景给数，不给「200~500ms」这种废话区间。',
+  },
+  {
+    href: '/rules',
+    count: '5',
+    unit: '条',
+    title: '原则',
+    desc: '五条铁律，外加一整页「这里不该动」的清单 —— 比该动的时候更难判断。',
+  },
+];
+---
+<Base title="动效实验室">
+  <section class="lab-container pt-14 md:pt-24">
+    <p class="lab-eyebrow mb-5">动效实验室 · Motion Lab</p>
+    <h1 class="lab-display max-w-3xl">
+      动效不是装饰，<br class="sm:hidden" />是一个决策。
+    </h1>
+    <p class="lab-lead mt-6 max-w-2xl">
+      同一个按钮，180ms 还是 320ms，ease-out 还是 ease-in-out —— 用户说不上来，但感觉得到。
+      这个站点把「说不上来」的部分，拆成可以对照、可以量化的东西。
+    </p>
+    <p class="mt-6 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5 text-xs text-muted-foreground">
+      <span class="size-1.5 rounded-full bg-curve-a"></span>
+      所有演示都由你触发，这个网站自己不动。
+    </p>
+  </section>
+
+  <section class="lab-container mt-12 md:mt-16" aria-labelledby="pair-title">
+    <h2 id="pair-title" class="sr-only">双曲线对照</h2>
+    <div class="overflow-hidden rounded-card border border-border bg-surface-sunken p-4 md:p-6">
+      <div class="text-foreground">
+        <svg
+          viewBox="0 0 480 240"
+          class="h-auto w-full"
+          role="img"
+          aria-label="两条缓动曲线对照：out-expo 先快后慢，in-expo 先慢后快"
+        >
+          <defs>
+            <pattern id="lab-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M40 0H0V40" fill="none" stroke="currentColor" stroke-opacity="0.07" stroke-width="1"></path>
+            </pattern>
+          </defs>
+          <rect width="480" height="240" fill="url(#lab-grid)"></rect>
+          <line x1="0" y1="239" x2="480" y2="239" stroke="currentColor" stroke-opacity="0.22" stroke-width="1"></line>
+          <path
+            d="M0 240 C 77 0 144 0 480 0"
+            fill="none"
+            stroke="var(--lab-curve-a)"
+            stroke-width="2.5"
+            stroke-linecap="round"></path>
+          <path
+            d="M0 240 C 336 240 403 240 480 0"
+            fill="none"
+            stroke="var(--lab-curve-b)"
+            stroke-width="2.5"
+            stroke-linecap="round"></path>
+        </svg>
+      </div>
+      <div class="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs">
+        <span class="inline-flex items-center gap-2 text-muted-foreground">
+          <span class="h-0.5 w-4 rounded-full bg-curve-a"></span>
+          <span class="tnum text-foreground">out-expo</span>
+          <span class="tnum">0.16, 1, 0.3, 1</span>
+        </span>
+        <span class="inline-flex items-center gap-2 text-muted-foreground">
+          <span class="h-0.5 w-4 rounded-full bg-curve-b"></span>
+          <span class="tnum text-foreground">in-expo</span>
+          <span class="tnum">0.7, 0, 0.84, 0</span>
+        </span>
+      </div>
+      <p class="mt-3 text-xs text-muted-foreground">
+        同样跑 320ms，一条像「弹出来」，一条像「被挤出来」。手感只在并排对照时才看得清。
+      </p>
+    </div>
+  </section>
+
+  <section class="lab-container mt-12 md:mt-16" aria-labelledby="entries-title">
+    <h2 id="entries-title" class="sr-only">内容入口</h2>
+    <div class="grid gap-4 md:grid-cols-3">
+      {entries.map((e) => (
+        <a href={e.href} class="lab-card group p-5 md:p-6">
+          <div class="flex items-baseline gap-1.5">
+            <span class="tnum text-2xl leading-none font-semibold text-foreground">{e.count}</span>
+            <span class="text-xs text-muted-foreground">{e.unit}</span>
+          </div>
+          <h3 class="mt-7 text-[0.9375rem] font-semibold text-foreground">{e.title}</h3>
+          <p class="mt-2 text-sm leading-relaxed text-muted-foreground">{e.desc}</p>
+          <span
+            class="mt-5 inline-flex items-center gap-1 text-xs text-accent transition-transform duration-200 group-hover:translate-x-0.5"
+          >
+            看看 <span aria-hidden="true">→</span>
+          </span>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section class="lab-container mt-16 md:mt-24">
+    <div class="max-w-2xl border-l-2 border-curve-a pl-5">
+      <p class="text-sm leading-relaxed text-muted-foreground">
+        <span class="font-semibold text-foreground">为什么不直接抄 easings.net。</span>
+        easings.net 给你曲线，cubic-bezier.com 给你调参，Animista 给你现成代码 ——
+        它们都不回答一个问题：<span class="text-foreground">这里到底该不该动。</span>
+      </p>
+    </div>
+  </section>
+</Base>

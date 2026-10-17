@@ -1,0 +1,24 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHeader from '../components/PageHeader.astro';
+import UnderConstruction from '../components/UnderConstruction.astro';
+---
+<Base
+  title="缓动曲线"
+  description="18 条常用缓动曲线的性格对照：进场 7 条、退场 4 条、位移 7 条，每条标注适用场景与禁用场景。"
+>
+  <PageHeader
+    eyebrow="Easing"
+    title="18 条曲线，18 种性格"
+    lead="曲线本身没人记得住，记得住的是「这个看起来急」。所以这里不讲数学，讲它给人的感觉、适合放在哪儿、以及放在哪儿会出问题。"
+  />
+  <UnderConstruction
+    milestone="M2"
+    items={[
+      '进场 7 条 / 退场 4 条 / 位移 7 条，按用途分组，而不是按 cubic-bezier 数值排序',
+      '任意两条并排播放，跑在同一帧、同一时长上',
+      '每条曲线附：用在哪、什么时候别用、和它搭配的时长',
+      '键盘可直接操作，减少动效模式下切换为「直接呈现结果」',
+    ]}
+  />
+</Base>

@@ -1,0 +1,39 @@
+---
+import ThemeToggle from './ThemeToggle.astro';
+
+const links = [
+  { href: '/easing', label: '缓动曲线' },
+  { href: '/timing', label: '时长节奏' },
+  { href: '/rules', label: '原则' },
+];
+
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const isActive = (href: string) => path === href;
+---
+<header class="lab-header">
+  <div class="lab-container flex h-14 items-center justify-between gap-4">
+    <a href="/" class="flex items-center gap-2.5" aria-label="动效实验室 · 首页">
+      <svg viewBox="0 0 32 32" fill="none" aria-hidden="true" class="size-[22px] shrink-0">
+        <path d="M4 27c7 0 8-22 24-22" stroke="var(--lab-curve-a)" stroke-width="3.2" stroke-linecap="round"></path>
+        <path d="M4 5c16 0 17 22 24 22" stroke="var(--lab-curve-b)" stroke-width="3.2" stroke-linecap="round"></path>
+      </svg>
+      <span class="hidden text-[0.9375rem] font-semibold sm:inline">动效实验室</span>
+    </a>
+
+    <div class="flex items-center gap-1">
+      <nav class="flex items-center gap-0.5" aria-label="主导航">
+        {links.map((l) => (
+          <a
+            href={l.href}
+            class="lab-nav-link"
+            data-active={isActive(l.href) ? 'true' : 'false'}
+            aria-current={isActive(l.href) ? 'page' : undefined}
+          >
+            {l.label}
+          </a>
+        ))}
+      </nav>
+      <ThemeToggle />
+    </div>
+  </div>
+</header>

@@ -1,0 +1,16 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="页面不存在" description="这个地址没有内容。">
+  <section class="lab-container flex min-h-[60vh] flex-col justify-center py-20">
+    <p class="lab-eyebrow mb-5">404</p>
+    <h1 class="lab-display max-w-2xl">这一页，不动了。</h1>
+    <p class="lab-lead mt-5 max-w-xl">地址可能是打错了，也可能是内容还没写。回到首页重新找。</p>
+    <a
+      href="/"
+      class="mt-8 inline-flex w-fit items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-foreground transition-colors hover:bg-muted"
+    >
+      回首页 <span aria-hidden="true">→</span>
+    </a>
+  </section>
+</Base>
