@@ -1,24 +1,246 @@
 ---
 import Base from '../layouts/Base.astro';
 import PageHeader from '../components/PageHeader.astro';
-import UnderConstruction from '../components/UnderConstruction.astro';
+import PerfCompare from '../components/PerfCompare.astro';
+import { RULES, NO_MOTION, CHECKLIST } from '../data/rules';
+
+// 代码示例放在 frontmatter 里，避免 <pre> 中的花括号被当成模板表达式
+const RM_BAD = `@media (prefers-reduced-motion: reduce) {
+  /* 动画没了，用户也不知道点没点上 */
+  .dialog { animation: none; }
+}`;
+
+const RM_GOOD = `@media (prefers-reduced-motion: reduce) {
+  /* 时长归零，终态照常呈现 */
+  .dialog {
+    animation-duration: 0.001ms;
+    animation-iteration-count: 1;
+  }
+}`;
 ---
 <Base
   title="原则"
-  description="动效的五条铁律，以及一页「这里不该动」的清单 —— 判断什么时候不动，比什么时候动更难。"
+  description="动效的五条铁律：只动 transform、进场比退场慢、距离决定时长，以及一页「这里不该动」的清单和发布前自检表。"
 >
   <PageHeader
-    eyebrow="Rules"
+    eyebrow="Rules · 5 条"
     title="五条铁律，和一页「不该动」"
     lead="做动效的能力人人都有，克制才稀缺。真正拉开差距的不是你会多少种曲线，而是你知道哪一次点击不该有动画。"
   />
-  <UnderConstruction
-    milestone="M4"
-    items={[
-      '五条铁律，每条配一个违反它的具体反例',
-      '「这里不该动」清单：高频操作、系统级反馈、内容阅读路径……',
-      'prefers-reduced-motion 的正确处理方式：不是关掉，是换成瞬间到位',
-      '一页自检表，发布前逐条对一遍',
-    ]}
-  />
+
+  <section class="lab-container" aria-labelledby="rules-title">
+    <h2 id="rules-title" class="sr-only">五条铁律</h2>
+    <ol class="border-t border-border">
+      {RULES.map((rule) => (
+        <li class="grid gap-3 border-b border-border py-6 md:grid-cols-[3rem_minmax(0,1fr)]">
+          <span class="tnum text-sm text-muted-foreground">0{rule.n}</span>
+          <div>
+            <h3 class="text-[0.9375rem] font-semibold text-foreground">{rule.title}</h3>
+            <p class="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">{rule.body}</p>
+            <p class="mt-2 max-w-2xl text-xs leading-relaxed text-muted-foreground">
+              <span class="text-curve-b">违反会怎样：</span>{rule.counter}
+            </p>
+          </div>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <PerfCompare />
+
+  <section class="lab-container mt-14 md:mt-20" aria-labelledby="nomotion-title">
+    <h2 id="nomotion-title" class="text-lg font-semibold text-foreground">这里不该动</h2>
+    <p class="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+      判断「什么时候不动」比「什么时候动」难得多。下面这几类，默认答案就是不要动。
+    </p>
+    <div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {NO_MOTION.map((item) => (
+        <div class="rounded-card border border-border bg-surface p-4">
+          <h3 class="text-sm font-medium text-foreground">{item.title}</h3>
+          <p class="mt-1.5 text-xs leading-relaxed text-muted-foreground">{item.why}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="lab-container mt-14 md:mt-20" aria-labelledby="rm-title">
+    <h2 id="rm-title" class="text-lg font-semibold text-foreground">减少动效的正确做法</h2>
+    <p class="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+      铁律 5 展开说一遍。区别只有一句话：<span class="text-foreground">用户要知道「事情发生了」。</span>
+    </p>
+
+    <div class="mt-6 grid gap-3 md:grid-cols-2">
+      <div class="rounded-card border border-border bg-surface p-4">
+        <p class="mb-2 text-xs font-medium text-curve-b">✗ 直接不播</p>
+        <pre class="overflow-x-auto rounded-md bg-surface-sunken p-3 text-[11px] leading-relaxed text-muted-foreground"><code>{RM_BAD}</code></pre>
+      </div>
+      <div class="rounded-card border border-border bg-surface p-4">
+        <p class="mb-2 text-xs font-medium text-curve-a">✓ 直接到终点</p>
+        <pre class="overflow-x-auto rounded-md bg-surface-sunken p-3 text-[11px] leading-relaxed text-muted-foreground"><code>{RM_GOOD}</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="lab-container mt-14 md:mt-20" aria-labelledby="check-title">
+    <h2 id="check-title" class="text-lg font-semibold text-foreground">发布前自检表</h2>
+    <p class="mt-2 text-xs text-muted-foreground">逐条对一遍，有一条不成立就先别发。</p>
+    <ul class="mt-5 grid gap-2.5 sm:grid-cols-2">
+      {CHECKLIST.map((item) => (
+        <li class="flex gap-2.5 rounded-md border border-border bg-surface px-3 py-2.5 text-xs leading-relaxed text-muted-foreground">
+          <span class="mt-1.5 size-1 shrink-0 rounded-full bg-accent"></span>
+          <span>{item}</span>
+        </li>
+      ))}
+    </ul>
+  </section>
 </Base>
+
+<script>
+  // ─────────────────────────────────────────────────────────────
+  // 性能对比。三层设计，从「决定性证据」到「辅助观察」：
+  //
+  // 1. 布局耗时微基准 —— 真正的机制。动 left 会让布局失效，每次读
+  //    offsetWidth 都要同步重算；动 transform 不动布局，读数接近 0。
+  //    这一项在任何设备上都拉得开，是最硬的证据。
+  // 2. 动画帧率 —— 辅助。强设备上两边都可能满帧，所以不能只靠它。
+  // 3. 掉帧数 —— 症状，不是原因。
+  //
+  // 两栏【先后】运行：同时跑会共用主线程，慢的一边会把读数一起拉低。
+  // ─────────────────────────────────────────────────────────────
+  const perf = document.querySelector<HTMLElement>('[data-perf]');
+
+  if (perf) {
+    const runBtn = perf.querySelector<HTMLButtonElement>('[data-perf-run]');
+    const note = perf.querySelector<HTMLElement>('[data-perf-note]');
+    const DURATION = 1600;
+    const EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
+    const ITERATIONS = 120;
+    const reduced = () => document.documentElement.getAttribute('data-motion') === 'reduce';
+
+    const median = (arr: number[]) => {
+      const s = [...arr].sort((a, b) => a - b);
+      return s.length ? s[Math.floor(s.length / 2)] : 0;
+    };
+
+    function sample(ms: number): Promise<number[]> {
+      return new Promise((resolve) => {
+        const deltas: number[] = [];
+        let last = performance.now();
+        const t0 = last;
+        const tick = (now: number) => {
+          const d = now - last;
+          last = now;
+          if (now - t0 > 200) deltas.push(d);
+          if (now - t0 < ms) requestAnimationFrame(tick);
+          else resolve(deltas);
+        };
+        requestAnimationFrame(tick);
+      });
+    }
+
+    function getSide(key: 'left' | 'transform') {
+      const side = perf!.querySelector<HTMLElement>(`[data-perf-side="${key}"]`);
+      if (!side) return null;
+      const stage = side.querySelector<HTMLElement>('[data-perf-stage]');
+      const boxes = Array.from(side.querySelectorAll<HTMLElement>('[data-perf-box]'));
+      const status = side.querySelector<HTMLElement>('[data-perf-status]');
+      if (!stage) return null;
+      return { side, stage, boxes, status };
+    }
+
+    function resetBoxes(boxes: HTMLElement[]) {
+      boxes.forEach((b) => {
+        b.style.transition = 'none';
+        b.style.left = `${b.dataset.base}px`;
+        b.style.transform = 'none';
+      });
+    }
+
+    /** 微基准：反复改样式并强制同步布局，量总耗时 */
+    function measureLayout(boxes: HTMLElement[], stage: HTMLElement, mode: 'left' | 'transform') {
+      resetBoxes(boxes);
+      void stage.offsetWidth;
+
+      const t0 = performance.now();
+      for (let i = 0; i < ITERATIONS; i++) {
+        const shift = (i / ITERATIONS) * 40;
+        boxes.forEach((b) => {
+          if (mode === 'left') b.style.left = `${Number(b.dataset.base) + shift}px`;
+          else b.style.transform = `translateX(${shift}px)`;
+        });
+        void stage.offsetWidth; // 强制同步布局
+      }
+      const cost = performance.now() - t0;
+      resetBoxes(boxes);
+      void stage.offsetWidth;
+      return Math.round(cost * 10) / 10;
+    }
+
+    async function runSide(key: 'left' | 'transform', budget: number) {
+      const ctx = getSide(key);
+      if (!ctx) return null;
+      const { stage, boxes, status } = ctx;
+
+      if (status) status.textContent = '测量中';
+      const layout = measureLayout(boxes, stage, key);
+
+      // 动画 + 采样
+      resetBoxes(boxes);
+      void stage.offsetWidth;
+      boxes.forEach((b) => {
+        const base = Number(b.dataset.base ?? 0);
+        const dist = Math.max(0, stage.clientWidth - base - 6 - 4);
+        if (key === 'left') {
+          b.style.transition = `left ${DURATION}ms ${EASE}`;
+          b.style.left = `${base + dist}px`;
+        } else {
+          b.style.transition = `transform ${DURATION}ms ${EASE}`;
+          b.style.transform = `translateX(${dist}px)`;
+        }
+      });
+
+      const deltas = await sample(DURATION);
+      const fps = deltas.length ? Math.round(1000 / median(deltas)) : 0;
+      const dropped = deltas.filter((d) => d > budget * 1.5).length;
+
+      if (status) status.textContent = '完成';
+      const set = (m: string, v: string) => {
+        const el = ctx.side.querySelector<HTMLElement>(`[data-metric="${m}"]`);
+        if (el) el.textContent = v;
+      };
+      set('fps', String(fps));
+      set('layout', `${layout}ms`);
+      set('dropped', String(dropped));
+      return { fps, layout, dropped };
+    }
+
+    runBtn?.addEventListener('click', async () => {
+      runBtn.disabled = true;
+
+      if (reduced()) {
+        if (note) {
+          note.textContent =
+            '你开启了「减少动效」，按本站自己的铁律 5，这一条不播动画、不采样。关掉减少动效再回来测。';
+        }
+        runBtn.disabled = false;
+        return;
+      }
+
+      const budget = median(await sample(300)) || 16.7;
+      const a = await runSide('left', budget);
+      const b = await runSide('transform', budget);
+      runBtn.disabled = false;
+      if (!a || !b || !note) return;
+
+      const ratio = a.layout > 0 ? Math.round((a.layout / Math.max(b.layout, 0.1)) * 10) / 10 : 0;
+      const smooth = a.fps >= b.fps;
+      note.textContent =
+        `本次实测：动 left 布局耗时 ${a.layout}ms、${a.fps}fps、掉帧 ${a.dropped} 次；` +
+        `动 transform 布局耗时 ${b.layout}ms、${b.fps}fps、掉帧 ${b.dropped} 次。` +
+        `布局成本相差 ${ratio} 倍。` +
+        (smooth
+          ? '这台设备帧率没有拉开差距，说明它够强 —— 但在弱设备或元素更多时，差别会立刻出现在帧率上。'
+          : '');
+    });
+  }
+</script>

@@ -1,0 +1,109 @@
+---
+// transform vs left 的性能对比。
+//
+// 关键设计：两栏【顺序】运行，不是同时。
+// 同时跑的话两边共用同一个主线程，慢的那边会把读数一起拉低，
+// 就没法把结果归因到具体的动画属性上。
+//
+// 帧率用 requestAnimationFrame 的间隔采样：主线程被布局卡住时，
+// rAF 回调会被推迟，间隔变大——这是可观测的。
+const BOXES = 96;
+---
+<section class="lab-container mt-14 md:mt-20" aria-labelledby="perf-title" data-perf>
+  <div class="rounded-card border border-border bg-surface p-4 sm:p-6">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <h2 id="perf-title" class="text-base font-semibold text-foreground">铁律 1 的现场</h2>
+        <p class="mt-1 max-w-xl text-xs leading-relaxed text-muted-foreground">
+        同样 {BOXES} 个元素，一个动 <code class="tnum">left</code>、一个动 <code class="tnum">transform</code>。
+        两栏<strong class="text-foreground">先后</strong>各测一次，避免互相干扰。先量
+        <strong class="text-foreground">布局耗时</strong>（这才是规则的机制），再播一遍看帧率。
+      </p>
+      </div>
+      <button type="button" class="perf-btn" data-perf-run>开始对比</button>
+    </div>
+
+    <div class="mt-5 grid gap-4 md:grid-cols-2">
+      {[
+        { key: 'left', label: '动 left（触发布局）', tone: 'text-curve-b' },
+        { key: 'transform', label: '动 transform（合成层）', tone: 'text-curve-a' },
+      ].map((side) => (
+        <div class="rounded-md border border-border p-3" data-perf-side={side.key}>
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs font-medium text-foreground">{side.label}</span>
+            <span class="perf-badge" data-perf-status>待运行</span>
+          </div>
+
+          <div class="relative mt-2 h-32 overflow-hidden rounded bg-surface-sunken" data-perf-stage>
+            {Array.from({ length: BOXES }).map((_, i) => (
+              <span
+                class="perf-box absolute"
+                data-perf-box
+                data-base={Math.floor(i / 16) * 8 + 2}
+                style={`top: ${(i % 16) * 8 + 2}px; left: ${Math.floor(i / 16) * 8 + 2}px;`}></span>
+            ))}
+          </div>
+
+          <dl class="mt-3 grid grid-cols-3 gap-2 text-center">
+            <div>
+              <dt class="text-[10px] text-muted-foreground">帧率</dt>
+              <dd class="tnum text-sm text-foreground" data-metric="fps">—</dd>
+            </div>
+            <div>
+              <dt class="text-[10px] text-muted-foreground">布局耗时</dt>
+              <dd class="tnum text-sm text-foreground" data-metric="layout">—</dd>
+            </div>
+            <div>
+              <dt class="text-[10px] text-muted-foreground">掉帧</dt>
+              <dd class="tnum text-sm text-foreground" data-metric="dropped">—</dd>
+            </div>
+          </dl>
+        </div>
+      ))}
+    </div>
+
+    <p class="mt-4 text-[11px] leading-relaxed text-muted-foreground" data-perf-note>
+      读数是你这台设备此刻的真实表现。<code class="tnum">transform</code> 可以交给合成线程，
+      <code class="tnum">left</code> 必须每帧回主线程重算布局 —— 这个差别在弱设备、大 DOM、主线程同时在忙别的时才会被放大。
+      强设备上两栏接近是正常的，不代表规则不成立，只代表你还没赌到会被它咬的那台机器。
+    </p>
+  </div>
+</section>
+
+<style>
+  .perf-btn {
+    border-radius: 9999px;
+    border: 1px solid var(--lab-accent);
+    padding: 0.35rem 0.75rem;
+    font-size: 12px;
+    line-height: 1.4;
+    background-color: var(--lab-accent);
+    color: var(--lab-accent-foreground);
+    transition: filter var(--lab-dur-fast) var(--lab-ease-out);
+  }
+
+  .perf-btn:hover {
+    filter: brightness(1.06);
+  }
+
+  .perf-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .perf-badge {
+    border-radius: 9999px;
+    border: 1px solid var(--lab-border);
+    padding: 0.1rem 0.45rem;
+    font-size: 10px;
+    color: var(--lab-muted-foreground);
+  }
+
+  .perf-box {
+    width: 6px;
+    height: 6px;
+    border-radius: 1px;
+    background-color: var(--lab-muted-foreground);
+    will-change: auto;
+  }
+</style>
