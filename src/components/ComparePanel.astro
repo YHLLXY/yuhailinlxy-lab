@@ -43,10 +43,10 @@
       <div class="grid gap-3">
       {['a', 'b'].map((slot, i) => (
         <div class="rounded-md border border-border p-3" data-slot={slot}>
-          <div class="flex items-baseline justify-between gap-2">
+          <div class="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
             <span class="flex min-w-0 items-center gap-2">
               <span class={`size-2 shrink-0 rounded-full ${i === 0 ? 'bg-curve-a' : 'bg-curve-b'}`}></span>
-              <span class="truncate text-xs font-medium text-foreground" data-slot-name>未选</span>
+              <span class="text-xs font-medium text-foreground" data-slot-name>未选</span>
             </span>
             <code class="tnum shrink-0 text-[11px] text-muted-foreground" data-slot-bezier></code>
           </div>
