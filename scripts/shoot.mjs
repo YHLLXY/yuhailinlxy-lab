@@ -26,6 +26,8 @@ const scheme = arg('scheme', 'light');
 const fullPage = argv.includes('--full');
 // --pick 0,1 表示先点选第 0、1 张卡片的「对照」按钮，用于截取对照台
 const pick = (arg('pick', '') || '').split(',').filter(Boolean).map(Number);
+// --try N 表示依次点开前 N 个「试一下」（/timing 页用）
+const tryN = Number(arg('try', '0'));
 const base = arg('base', 'http://localhost:4321');
 
 const EDGE_CANDIDATES = [
@@ -63,6 +65,10 @@ try {
   for (const i of pick) {
     await page.locator('[data-easing-card]').nth(i).locator('[data-pick]').click();
     await page.waitForTimeout(200);
+  }
+  for (let i = 0; i < tryN; i++) {
+    await page.locator('[data-timing-row]').nth(i).locator('[data-try]').click();
+    await page.waitForTimeout(80);
   }
   // 选择动作会触发平滑滚动，等它彻底停下再截图
   await page.waitForTimeout(pick.length ? 900 : 250);

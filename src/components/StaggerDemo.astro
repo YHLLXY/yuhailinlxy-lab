@@ -1,0 +1,62 @@
+---
+import { STAGGER } from '../data/timing';
+
+const groups = [
+  { key: 'none', label: '无错峰 · 0ms', gap: 0 },
+  { key: 'stagger', label: '错峰 · 60ms', gap: STAGGER.gap },
+];
+---
+<section
+  class="lab-container mt-14 md:mt-20"
+  aria-labelledby="stagger-title"
+  data-stagger
+  data-stagger-base={STAGGER.base}>
+  <div class="rounded-card border border-border bg-surface p-4 sm:p-6">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <h2 id="stagger-title" class="text-base font-semibold text-foreground">错峰对比</h2>
+        <p class="mt-1 max-w-lg text-xs leading-relaxed text-muted-foreground">
+          同样 8 个元素、同样单条 320ms，唯一差别是相邻间隔。左边一起蹦出来，右边依次落位。
+        </p>
+      </div>
+      <button type="button" class="stagger-btn" data-stagger-play>同时播放</button>
+    </div>
+
+    <div class="mt-5 grid gap-5 md:grid-cols-2">
+      {groups.map((g) => (
+        <div data-stagger-group data-gap={g.gap}>
+          <p class="mb-2 text-[11px] text-muted-foreground">{g.label}</p>
+          <div class="grid grid-cols-4 gap-2">
+            {Array.from({ length: STAGGER.items }).map(() => (
+              <span class="h-9 rounded-md bg-surface-sunken ring-1 ring-border" data-stagger-item></span>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <p class="mt-4 text-[11px] leading-relaxed text-muted-foreground">{STAGGER.note}</p>
+  </div>
+</section>
+
+<style>
+  .stagger-btn {
+    border-radius: 9999px;
+    border: 1px solid var(--lab-border-strong);
+    padding: 0.35rem 0.75rem;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--lab-foreground);
+    transition: background-color var(--lab-dur-fast) var(--lab-ease-out);
+  }
+
+  .stagger-btn:hover {
+    background-color: var(--lab-muted);
+  }
+
+  [data-stagger-item] {
+    opacity: 0;
+    transform: translateY(8px);
+    will-change: opacity, transform;
+  }
+</style>

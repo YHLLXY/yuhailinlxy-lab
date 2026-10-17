@@ -1,24 +1,115 @@
 ---
 import Base from '../layouts/Base.astro';
 import PageHeader from '../components/PageHeader.astro';
-import UnderConstruction from '../components/UnderConstruction.astro';
+import TimingRow from '../components/TimingRow.astro';
+import StaggerDemo from '../components/StaggerDemo.astro';
+import { TIMING_SCENARIOS } from '../data/timing';
 ---
 <Base
   title="时长节奏"
-  description="11 个常见场景该给多少毫秒：hover、开关、弹窗、抽屉、页面转场等，附五条节奏铁律。"
+  description="11 个常见场景该给多少毫秒：hover、开关、Tooltip、弹窗、抽屉、页面转场等，每个场景都能听到过快与过慢的反例。"
 >
   <PageHeader
-    eyebrow="Timing"
+    eyebrow="Timing · 11 个场景"
     title="多久才算对"
-    lead="时长不是审美问题，是物理问题 —— 元素越大、位移越远、人越需要反应时间，就得越久。这里按场景给具体数字。"
+    lead="时长不是审美问题，是物理问题 —— 元素越大、位移越远、人越需要反应时间，就得越久。所以这里不给「200~500ms」这种区间，直接给数。"
   />
-  <UnderConstruction
-    milestone="M3"
-    items={[
-      '11 个场景逐一给出毫秒数与理由：hover、按钮、开关、折叠、弹窗、抽屉、页面转场……',
-      '滑动条实时改时长，同屏看 120 / 240 / 480ms 的差别',
-      '五条节奏铁律：大位移配长时长、入场慢退场快、同一容器内时长要成比例……',
-      '同一场景下「过快」和「过慢」的反例，让你看见出错的版本',
-    ]}
-  />
+
+  <div class="lab-container">
+    <div class="rounded-card border border-border bg-surface p-4 text-xs leading-relaxed text-muted-foreground sm:p-5">
+      <p>
+        每行点「试一下」，会展开<strong class="text-foreground">过快 / 基准 / 过慢</strong>三条并排，
+        同帧起跑 —— 差距是听出来的，不是看数字看出来的。
+      </p>
+      <p class="mt-2">
+        这 11 个数不是拍脑袋：几乎都能对上 Material 3 的时长档位（short1 50ms → extra-long4 1000ms），
+        说明这套经验值和一线设计系统是同一个节奏。
+      </p>
+    </div>
+
+    <ul class="mt-8 border-t border-border">
+      {TIMING_SCENARIOS.map((scenario) => <TimingRow scenario={scenario} />)}
+    </ul>
+  </div>
+
+  <StaggerDemo />
+
+  <p class="lab-container mt-12 text-xs text-muted-foreground">
+    时长取自本地速查表的「时长基准表」；「过快 / 过慢」是按基准推导的编辑部判断，不是权威数据。
+    跨场景的取舍原则在 <a href="/rules" class="text-accent underline-offset-2 hover:underline">原则</a>。
+  </p>
 </Base>
+
+<script>
+  const PLAY_EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
+
+  /** 三条并排同帧起跑：同一个任务内写 transition，浏览器只提交一次 */
+  function playRow(row: HTMLElement) {
+    const ease = row.dataset.easing || 'linear';
+    const fills = Array.from(row.querySelectorAll<HTMLElement>('[data-fill]'));
+    if (fills.length === 0) return;
+
+    fills.forEach((f) => {
+      f.style.transition = 'none';
+      f.style.transform = 'scaleX(0)';
+    });
+    void row.offsetWidth;
+
+    fills.forEach((f) => {
+      f.style.transition = `transform ${f.dataset.ms}ms ${ease}`;
+      f.style.transform = 'scaleX(1)';
+    });
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-timing-row]').forEach((row) => {
+    const btn = row.querySelector<HTMLButtonElement>('[data-try]');
+    const demo = row.querySelector<HTMLElement>('[data-demo]');
+    const replay = row.querySelector<HTMLButtonElement>('[data-replay]');
+    if (!btn || !demo) return;
+
+    btn.addEventListener('click', () => {
+      const open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!open));
+      btn.textContent = open ? '试一下' : '收起';
+      demo.hidden = open;
+
+      if (!open) playRow(row);
+      else {
+        // 收起时归零，下次展开从头播
+        row.querySelectorAll<HTMLElement>('[data-fill]').forEach((f) => {
+          f.style.transition = 'none';
+          f.style.transform = 'scaleX(0)';
+        });
+      }
+    });
+
+    replay?.addEventListener('click', () => playRow(row));
+  });
+
+  // ── 错峰对比 ──
+  const stagger = document.querySelector<HTMLElement>('[data-stagger]');
+  stagger?.querySelector('[data-stagger-play]')?.addEventListener('click', () => {
+    const groups = Array.from(stagger.querySelectorAll<HTMLElement>('[data-stagger-group]'));
+    const base = Number(stagger.dataset.staggerBase ?? 320);
+
+    groups.forEach((g) =>
+      g.querySelectorAll<HTMLElement>('[data-stagger-item]').forEach((el) => {
+        el.style.transition = 'none';
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(8px)';
+      }),
+    );
+    void stagger.offsetWidth;
+
+    // 两组在同一个任务里写入，保证同帧起跑
+    groups.forEach((g) => {
+      const gap = Number(g.dataset.gap ?? 0);
+      g.querySelectorAll<HTMLElement>('[data-stagger-item]').forEach((el, i) => {
+        const delay = i * gap;
+        el.style.transition = `opacity ${base}ms ${PLAY_EASE} ${delay}ms, transform ${base}ms ${PLAY_EASE} ${delay}ms`;
+        el.style.opacity = '1';
+        el.style.transform = 'translateY(0)';
+      });
+    });
+  });
+</script>
